@@ -1,4 +1,4 @@
 # OSCP
-lets atart preparation for OSCP 
+lets start preparation for OSCP 
 
 ![OSCP](Images/download.png)
