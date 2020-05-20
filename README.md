@@ -5,4 +5,4 @@ lets start preparation for OSCP
 
 # <h5>OSCP journy Links</h5>
 
-<a href="www.facebook.com">Parteek OSCP journy</a>
+-[Rana OSCP journy](https://github.com/rkhal101/Hack-the-Box-OSCP-Preparation)
