@@ -1,0 +1,82 @@
+0-1  boJ9jbbUNNfktd78OOpsqOltutMc3MY1
+
+to read a dash (-) file we need to add ./ before file name or enter the full path
+
+
+$ cat data.txt | tr '[A-Za-z]' '[N-ZA-Mn-za-m]' character rotated by 13 possitions. 
+             5Gr8L4qetPEsPk8htqjhRK8XSP6x2RHh--->5Te8Y4drgCRfCx8ugdwuEX8KFC6k2EUu
+
+XXD command:--> do a reverse hex dump and store the file with its original name (DATA)
+                 $ cat data.txt | xxd -r > data     $ xxd -r data.txt > data_xxd_reverse
+
+
+File Command--> fetch the information of data. file command is used to determine the type of a file.
+                 $ file data_xxd_reverse
+
+gzip:--> first conver bin file to gzip(.gz) and then decompress it. $ gzip -d data1.gz 
+Bzip:--> first conver bin file to bzip(.bz) and then decompress it. $ bzip2 -b data2.bz 
+tar:-->  use file command to check the file type then conver file to tar(.tar). and then decompress it. $ tar -xf data5.tar 
+
+
+submitting the password of the current level to port 30001 on localhost using SSL encryption.
+ for ssl encryption i use --> openssl. s-client --> s_client command implements a generic SSL/TLS client which connects to a remote host using SSL/TLS.
+ -ign_eof--> inhibit(rokna) shutting down the connection when end of file is reached in the input.
+  $ openssl s_client -connect localhost:31790 -ign_eof
+
+
+
+Pseudo Terminal--->  stop ssh to logout automatically. (t /bin/sh) With “Pseudo Terminal”, it emulates terminal hardware, handling input and output, the same way a
+                     physical device would so that the software connected is unaware that it is not a real device attached. 
+                     $ ssh bandit18@bandit.labs.overthewire.org -p 2220 -t /bin/sh
+                     https://medium.com/@theGirlWhoEncrypts/overthewire-bandit-level-18-level-19-a446576eaa75
+
+
+SetUID and SetGID--> The setuid and setgid flags only have effect on binary executable files.  First octet ( -rws ) defines a permission for a file owner. 
+                       In this case owner has read, write permissions, and s means that the ‘sticky bit’ (suid) is enabled
+                       https://dynamicparallax.wordpress.com/2015/09/22/bandit-level-19-%E2%86%92-level-20/
+
+
+echo "GbKksEFF4yrVs6il55v6gwY5aVje5f0j" | nc -lvp 4561 localhost &
+
+Cron jobs---> https://medium.com/@theGirlWhoEncrypts/overthewire-bandit-level-21-level-22-37f933ab3a57
+
+
+nano command
+
+we can directly open any file from VIM just need to give path as command:---> :e /etc/bandit_pass/bandit26 
+and also run shell --->  :shell
+
+Git repository-----> directly can't do git clone. go to accessible folder and do ssh to git clone:---> 
+                  bandit27@bandit:/tmp/maddy5$ git clone ssh://bandit27-git@localhost/home/bandit27-git/repo
+        
+          git log: commad to check the commited history of repo. Use git log command with -p option, which shows the diff introduced 
+                                    in each commit. We can also use -1 option, which limits the output to only the last entry. 
+                          /tmp/secttp/repo$ git log -p -1
+                   https://medium.com/secttp/overthewire-bandit-level-28-2a5453c6e76c
+
+
+         git branch: see whether there are different branches of this repository. $ git branch -r 
+                     $ git checkout dev: Branch dev set up to track remote branch dev from origin.Switched to a new branch 'dev'
+                  https://medium.com/secttp/overthewire-bandit-level-29-9f2ee436c057
+
+Tail command:----->
+this command used to read the last 5 lines of any txt file "tail -5 FileName.txt"
+
+
+
+
+
+
+
+                     
+
+
+
+
+                
+ 
+
+ 
+
+
+

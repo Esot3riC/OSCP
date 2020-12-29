@@ -1,0 +1,118 @@
+----------------------------------------------------------------CHAPTER-2-------------------------------------------
+
+mkdir -p test/{recon,exploit,report}
+
+Finding Files in Kali Linux-----find, locate, which
+which--> The which command 39 searches through the directories that are defined in the $PATH environment variable for a given file name. ($ which sbd)
+locate---> locate searches a built-in database named locate.db rather than the entire hard disk itself. To manually update the locate.db database, you can use the
+           updatedb command. ($ sudo updatedb----- $ locate sbd.exe)
+find--> ($ sudo find / -name sbd*) perform a recursive search starting from the root file system directory and look for any file that starts with the letters “sbd”
+        find . -type f -readable ! -executable -size 1033c
+        find / -user bandit7 -group bandit6 -size 33c 2>/dev/null
+
+Question solve--> Use find to identify any file (not directory) modified in the last day, NOT owned by the root user
+Answer--> find /home/maddy/Desktop/ -mtime -1 -type f -user maddy (https://www.baeldung.com/linux/recently-changed-files)
+
+SSH service-->(port 22) commonly used to remotely access a computer, using a secure, encrypted protocol. The SSH service is TCP-based ($ sudo systemctl start ssh)
+              using the ss command and piping the output into grep to search the output for “sshd” ($ sudo ss -antlp | grep sshd)
+              SSH service start automatically at boot time ($ sudo systemctl enable ssh) 
+        To see a table of all available services, run systemctl with the list-unit-files option ($ systemctl list-unit-files)
+          $ ssh bandit14@localhost -i sshkey.private -p 2220
+
+apt-cache search and apt show--> apt-cache search command displays much of the information stored in the internal cached package database.
+                               For example, let’s say we would like to install the pure-ftpd application via APT. The first thing we have to do is to 
+                               find out whether or not the application is present in the Kali Linux repositories.
+                               ($ apt-cache search pure-ftpd)
+                      apt-show--> There are also a few authentication extensions for the pure-ftpd application that may be installed if needed. the detsilds are 
+                              availaible in system or not we can confirm through it ($ apt show resource-agents)
+
+apt remove -–purge--> command completely removes packages from Kali. It is important to note that removing a package with apt remove removes all package data
+                      but leaves usually small (modified) user configuration files behind, in case the removal was accidental. Adding the --purge
+                      option removes all the leftovers.(sudo apt remove --purge pure-ftpd)
+
+dpkg-----------> dpkg is the core tool used to install a package it does not require an Internet connection. Note that dpkg will not install any dependencies 
+                that the package might require To install a package with dpkg , provide the -i or --install option and the path to the 
+                .deb package file. This assumes that the .deb file of the package to install has been previously downloaded or obtained in some other way.
+                ($ sudo dpkg -i man-db_2.7.0.2-5_amd64.deb)
+
+History command tricks-->> !156 run commad from history in link number 156
+                           !! run previous command.
+
+Strings Command--> we can read some content of non-redable file using this command
+
+
+----------------------------------------------------------------CHAPTER-3-------------------------------------------
+
+PATH environment variable:---- https://geek-university.com/linux/path-environment-variable/
+
+history command---> Rather than re-typing a long command from our history, we can make use of the history expansion facility
+                    !34   run the command which is currently on line 34
+                    !!    run previous(last) commnad
+                    HISTSIZE controls the number of commands stored in memory for the current session and HISTFILESIZE configures how many commands 
+                    are kept in the history file
+
+nano command line editor----> touch comma^o to write changes to the file, ^k to cut the current line, ^u to un-cut a line and paste it at the cursor location,
+                  ^w to search, and ^x to exit.
+
+vi/vim command line editor---> I to insert the data, use dd to delete the current line, yy to copy the current line, p to paste the clipboard contents,
+                                 x to delete the current character, :w to write the current file to disk and stay in vi,
+                                :q! to quit without writing the file to disk, and finally :wq to save and quit.
+
+COMM file compair command---> 60 comm file1 file 2
+DIFF file compair command---> 61 context format ( -c ) and the unified format ( -u ) diff -c scan-a.txt scan-b.txt
+
+
+
+monitor files and commands in real-time--------------- commands tail and watch
+     tail:--> monitor the Apache logs in real time ($ sudo tail -f /var/log/apache2/access.log ~-f= contineu update the output file~) 
+                                                   (-nX switch-->which outputs the last “X” number of lines~ $ sudo tail -n3 /var/log/apache2/access.log)
+     watch:--> used to run a designated command at regular intervals. we can specify a different interval by using the -n X option to have it run
+                every “X” number of seconds. bydefault it is 2 second
+               $ watch -n 5 w (w command for check logged in users)
+
+Alias Command:--> give a name to command that use frequently ($ alias lsa='ls -la') now we can execute ls -la using lsa command. 
+                 list of defined aliases by running alias without arguments and unalias to remove command.
+
+
+
+----------------------------------------------------------------CHAPTER-4- Tools Used------------------------------------------ 
+
+NETCAT command-------------------->
+    1. nc -nv 10.11.0.22 110 (connect to a port)
+    2. nc -nlvp 4444 (steup server / listning port)
+    3. nc -nlvp 4444 > incoming.exe (transfer file usning port number 4444)
+
+   Page- 78
+   The netcat-traditional version of Netcat (compiled with the “-DGAPING_SECURITY_HOLE” flag) enables the -e
+   option, which executes a program after making or receiving a successful connection. When enabled, this option can redirect the input, output, 
+   and error messages of an executable to a TCP/UDP port rather than the default console.
+
+BIND SHELL---Bind shells have the listener running on the target and the attacker connect to the listener in order to gain a remote shell.
+REVERSE SHELL--- Reverse shells have the listener running on the attacker and the target connects to the attacker with a shell.
+https://medium.com/@PenTest_duck/bind-vs-reverse-vs-encrypted-shells-what-should-you-use-6ead1d947aa9
+
+
+Socat (PAGE-84) is a command-line utility that establishes two bidirectional byte streams and transfers data between them.---->
+POWERSHELL
+POWERCAT:- generate STANDALONE psyloads and encrypt them.
+
+TCPDUMP:----Tcpdump can both capture traffic from the network and read existing capture files. Let’s look atwhat happened in the password_cracking_filtered.
+             pcap file, 107 which was captured on a firewall. ($ sudo tcpdump -r password_cracking_filtered.pcap)
+To dump the captured traffic, we will use the -X option to print the packet data in both HEX and ASCII 108 format:
+$ sudo tcpdump -nX -r password_cracking_filtered.pcap
+
+
+----------------------------------------------------------------CHAPTER-5- Bash Scripting(105)------------------------------------------ 
+Bash scripts have an optional extension of .sh (for ease of identification), begin with #!/bin/bash. #! is commonly known as the shebang,
+chmod command, along with the +x option is used to make the script executable.
+
+Variables:---> Variables are named places to temporarily store data. We can set (or “declare”) a variable,we precede the variable with
+the “$” character.
+read command:---> capture interactive user input, use read to capture user input and assign it to a variable
+SearchSploit:----> is a command line search tool for Exploit-DB that allows us to take an offline copy of the Exploit Database with us wherever we go
+$ searchsploit afd windows -w -t
+grep:--> again with -v , which is a “reverse-grep” $grep -v "Nmap" | awk '{print$2}'
+cutycapt:-->  133 which is a Qt WebKit web page rendering capture utility.
+Netcraft:--> Netcraft 148 is an Internet services company based in England offering a free web portal that performs various information gathering functions.
+Recon-ng:--> recon-ng 149 is a module-based framework for web-based information gathering
+
